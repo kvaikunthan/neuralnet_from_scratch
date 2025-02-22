@@ -25,10 +25,8 @@ y_train = one_hot
 # Initializing layers and activation functions
 dense1 = Layer_Dense(784, 128)
 activation1 = Activation_ReLU()
-dense2 = Layer_Dense(128, 64)
-activation2 = Activation_ReLU()
-dense3 = Layer_Dense(64, 10)
-activation3 = Activation_Softmax()
+dense2 = Layer_Dense(128, 10)
+activation2 = Activation_Softmax()
 
 loss_function = Loss_CategoricalCrossEntropy()
 
@@ -41,27 +39,23 @@ for epoch in range(epochs):
     activation1.forward(dense1.output)
     dense2.forward(activation1.output)
     activation2.forward(dense2.output)
-    dense3.forward(activation2.output)
-    activation3.forward(dense3.output)
 
-    loss = loss_function.calculate(activation3.output, y_train)
+    loss = loss_function.calculate(activation2.output, y_train)
     
     # Backward pass
-    loss_function.backward(activation3.output, y_train)
-    dense3.backward(loss_function.dinputs, alpha)
-    activation2.backward(dense3.dinputs)
-    dense2.backward(activation2.dinputs, alpha)
+    loss_function.backward(activation2.output, y_train)
+    dense2.backward(loss_function.dinputs, alpha)
     activation1.backward(dense2.dinputs)
     dense1.backward(activation1.dinputs, alpha)
 
-    predictions = np.argmax(activation3.output, axis=1)
+    predictions = np.argmax(activation2.output, axis=1)
     y_true = np.argmax(y_train, axis=1)
     print(f"Epoch {epoch}, Loss: {loss:.4f}, Accuracy: {np.mean(predictions == y_true):.4f}")
 
 
-model = ((dense1.weights, dense1.biases), (dense2.weights, dense2.biases), (dense3.weights, dense3.biases))
-n_inputs = (784, 128, 64)
-n_neurons = (128, 64, 10)
+model = ((dense1.weights, dense1.biases), (dense2.weights, dense2.biases))
+n_inputs = (784, 128)
+n_neurons = (128, 64)
 s = x_test.shape
 x_test = x_test.reshape(s[0], s[1] * s[2])
 
@@ -74,6 +68,4 @@ np.savez(f'models/model_{accuracy}_{datetime.now().strftime("%Y-%m-%d_%H-%M")}.n
          dense1_biases=dense1.biases,
          dense2_weights=dense2.weights,
          dense2_biases=dense2.biases,
-         dense3_weights=dense3.weights,
-         dense3_biases=dense3.biases
          )
